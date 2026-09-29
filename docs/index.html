@@ -130,11 +130,24 @@ main{padding-block:clamp(36px,5vw,64px) 0}
 .pos{color:var(--paid)}.neg{color:var(--loss)}
 .fill.f-note{background:var(--ink)}
 .fill.f-stock{background:var(--rule-2)}
-.share{margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--page);border:0;border-radius:999px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s var(--ease),background .2s}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.share{text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--page);border:0;border-radius:999px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s var(--ease),background .2s}
 .share:hover{background:oklch(0.32 0.03 165)}
 .share:active{transform:scale(.98)}
 .share:focus-visible{outline:2px solid var(--paid);outline-offset:3px}
 .share svg{width:16px;height:16px}
+.share.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--rule-2)}
+.share.ghost:hover{background:var(--paid-soft)}
+dialog{margin:auto;border:0;border-radius:18px;padding:0;background:var(--page);color:var(--ink);width:min(760px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-shadow:0 30px 80px oklch(0.2 0.03 165/.35)}
+dialog::backdrop{background:oklch(0.2 0.03 165/.55)}
+dialog[open]{animation:pop .32s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}}
+.dlg{padding:18px}
+.dlg img{display:block;width:100%;height:auto;border-radius:10px;background:var(--cover);aspect-ratio:16/9}
+.dlg h2{font-size:18px;font-weight:700;margin-top:16px}
+.dlg p{font-size:15px;color:var(--ink-2);margin-top:4px;max-width:60ch}
+.dlg .actions{margin-top:14px}
+.x-close{margin-left:auto}
 
 .checks{margin-top:clamp(40px,6vw,72px)}
 .checks-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px 20px;flex-wrap:wrap}
@@ -244,7 +257,10 @@ footer a{color:var(--ink-2)}
         <div class="track"><div class="fill f-stock" id="fStock"></div><div class="tick" id="tick2"></div></div>
       </div>
       <p class="tick-l">The dark tick marks the $1,000 you put in.</p>
-      <button class="share" id="share" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 013.6 3.6L10.6 8M9 11.5l-1.2 1.2a2.6 2.6 0 01-3.6-3.6L5.4 8"/></svg><span id="shareTxt">Copy a link to this note</span></button>
+      <div class="actions">
+      <button class="share" id="card" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M2.5 11l3.5-3.5 2.5 2.5 2-2 3 3"/><circle cx="10.5" cy="6" r="1"/></svg><span>Make a share image</span></button>
+      <button class="share ghost" id="share" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 013.6 3.6L10.6 8M9 11.5l-1.2 1.2a2.6 2.6 0 01-3.6-3.6L5.4 8"/></svg><span id="shareTxt">Copy link</span></button>
+      </div>
     </div>
   </section>
 
@@ -279,6 +295,20 @@ footer a{color:var(--ink-2)}
   </footer>
 </main>
 
+<dialog id="dlg" aria-labelledby="dlgT">
+  <div class="dlg">
+    <img id="cardImg" alt="">
+    <h2 id="dlgT">Your note, ready to post</h2>
+    <p id="dlgP">Save the image, then attach it to your post on X. The text and the link to this exact note are filled in for you.</p>
+    <div class="actions">
+      <button class="share" id="nativeShare" type="button" hidden><span>Share image</span></button>
+      <a class="share" id="dl" download="note.png" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.5v8M4.5 7.5L8 11l3.5-3.5M3 13.5h10"/></svg><span>Save image</span></a>
+      <a class="share ghost" id="post" target="_blank" rel="noopener" href="#"><span>Open X with the text</span></a>
+      <button class="share ghost x-close" id="dlgClose" type="button"><span>Close</span></button>
+    </div>
+  </div>
+</dialog>
+
 <script>
 const NAMES={NVDA:"Nvidia",TSLA:"Tesla",AAPL:"Apple",MSFT:"Microsoft",AMZN:"Amazon",META:"Meta",COIN:"Coinbase",HOOD:"Robinhood"};
 const AN=new Set(["Nvidia","Apple","Amazon"]);
@@ -309,6 +339,9 @@ fetch("notes.json").then(r=>r.json()).then(j=>{
   $("sides").addEventListener("change",e=>{side=e.target.value;setStock(sym);setIdx(idx)});
   $("rand").onclick=()=>setIdx(Math.floor(Math.random()*notes().length));
   $("share").onclick=share;
+  $("card").onclick=openCard;
+  $("dlgClose").onclick=()=>$("dlg").close();
+  $("dlg").addEventListener("click",e=>{if(e.target===$("dlg"))$("dlg").close()});
   const m=/^#([A-Z]+)\/(\d{4}-\d{2}-\d{2})(?:\/(shield))?$/.exec(location.hash);
   if(m&&m[3]){side="shield";document.querySelector('#sides input[value=shield]').checked=true}
   if(m&&D.stocks[m[1]]){setStock(m[1]);setIdx(nearest(m[2]))}
@@ -512,8 +545,111 @@ function drawChart(animate){
   }
 }
 
+const K={cover:"#0e3929",raise:"#184735",line:"#3f6454",inkC:"#eef8f3",mute:"#b3cfc2",good:"#89c7ab",meh:"#eec55e",bad:"#f87a60",page:"#f4f8f6",ink:"#14201b",ink3:"#5b6661",rule:"#d3dbd7",paid:"#03734a",loss:"#ba2d1f",lossSoft:"#ffe3de"};
+const FF='"Schibsted Grotesk", system-ui, sans-serif';
+let cardURL=null,cardFile=null;
+
+function cardData(){
+  const n=cur(),name=NAMES[sym],fin=n.p[n.p.length-1],sh=side==="shield",weeks=2*n.h;
+  const total=valueOf(n),stock=BASE*fin;
+  const mood=sh?(n.o==="ki"?"good":n.o==="ac"?"meh":"bad"):(n.o==="ac"?"good":n.o==="cash"?"meh":"bad");
+  const when=new Date(n.d+"T12:00:00Z").toLocaleDateString("en-GB",{month:"short",year:"numeric",timeZone:"UTC"});
+  let line;
+  if(sh){
+    line=n.o==="ki"?`The crash protection paid out: $1,000 cash for shares worth ${usd(stock)}.`
+      :n.o==="cash"?`Ran the full year. Paid $15 ${n.c} time${n.c===1?"":"s"}, and the protection never paid out.`
+      :`Shares back after ${weeks} weeks. Protection cost $${(n.c*GPAY+SFEE).toFixed(2)}.`;
+  }else{
+    line=n.o==="ki"?`Down ${(100*(1-fin)).toFixed(0)}% at the last check, so it was paid back in shares.`
+      :n.o==="cash"?`Ran the full year: ${n.c} payment${n.c===1?"":"s"} of $12.75, then $1,000 back in cash.`
+      :`$1,000 back after ${weeks} weeks, plus ${n.c} payment${n.c===1?"":"s"} of $12.75.`;
+  }
+  return {n,name,fin,sh,weeks,total,stock,mood,when,line,tag:$("tag").textContent};
+}
+
+function fit(ctx,text,weight,size,max){let f=size;do{ctx.font=`${weight} ${f}px ${FF}`}while(ctx.measureText(text).width>max&&--f>12);return f}
+function wrap(ctx,text,x,y,max,lh){const w=text.split(" ");let line="";for(const word of w){const t=line?line+" "+word:word;if(ctx.measureText(t).width>max&&line){ctx.fillText(line,x,y);y+=lh;line=word}else line=t}ctx.fillText(line,x,y);return y}
+
+async function drawCard(){
+  try{await Promise.all([document.fonts.load(`800 120px ${FF}`),document.fonts.load(`700 40px ${FF}`),document.fonts.load(`500 20px ${FF}`)])}catch(e){}
+  const d=cardData(),W=1200,H=675,S=2,c=document.createElement("canvas");
+  c.width=W*S;c.height=H*S;const x=c.getContext("2d");x.scale(S,S);x.textBaseline="alphabetic";
+  x.fillStyle=K.cover;x.fillRect(0,0,W,H);
+  // header
+  x.fillStyle=K.inkC;x.font=`800 26px ${FF}`;x.fillText("@0xbuchi",64,76);
+  x.fillStyle=K.mute;x.font=`500 19px ${FF}`;x.textAlign="right";x.fillText("Note Systems backtest on real prices, 2015 to 2025",W-64,76);x.textAlign="left";
+  // tag
+  x.font=`700 18px ${FF}`;const tw=x.measureText(d.tag).width;
+  x.fillStyle=K[d.mood];x.beginPath();x.roundRect(64,118,tw+50,38,19);x.fill();
+  x.fillStyle=K.cover;x.beginPath();x.arc(84,137,5,0,7);x.fill();x.fillText(d.tag,98,143);
+  // title
+  const L=64,LW=548;
+  const title=d.sh?`Protecting $1,000 of ${d.name}`:`My $1,000 ${d.name} note`;
+  fit(x,title,700,46,LW);x.fillStyle=K.inkC;x.fillText(title,L,222);
+  x.fillStyle=K.mute;x.font=`500 21px ${FF}`;x.fillText(`${d.sh?"Stock side (SHIELD)":"Cash side (COUPON)"}, started ${fdate(d.n.d)}`,L,260);
+  // amount
+  const amt=usd(d.total),col=d.total>=BASE?K.good:K.bad;
+  x.fillStyle=K.mute;x.font=`600 20px ${FF}`;x.fillText("Ended with",L,330);
+  fit(x,amt,800,120,380);x.fillStyle=col;x.fillText(amt,L-4,440);
+  const aw=x.measureText(amt).width;x.font=`700 32px ${FF}`;x.fillText(pct(d.total/BASE-1),L+aw+14,440);
+  x.fillStyle=K.mute;x.font=`500 22px ${FF}`;x.fillText(`Just holding ${d.name}: ${usd(d.stock)} (${pct(d.fin-1)})`,L,486);
+  x.fillStyle=K.inkC;x.font=`500 21px ${FF}`;wrap(x,d.line,L,534,LW,29);
+  // chart panel
+  const px=652,py=112,pw=W-64-px,ph=458;
+  x.fillStyle=K.page;x.beginPath();x.roundRect(px,py,pw,ph,20);x.fill();
+  x.fillStyle=K.ink;x.font=`700 19px ${FF}`;x.fillText("Every two-week check",px+26,py+42);
+  x.fillStyle=K.ink3;x.font=`500 15px ${FF}`;x.textAlign="right";x.fillText(`${d.n.h} of 26 checks`,px+pw-26,py+42);x.textAlign="left";
+  const cx0=px+26,cx1=px+pw-26,cy0=py+72,cy1=py+ph-104;
+  const pts=[1,...d.n.p],lo=Math.min(0.5,...pts)-0.05,hi=Math.max(1.2,...pts)+0.05;
+  const X=i=>i?cx0+((i-0.5)/26)*(cx1-cx0):cx0,Y=v=>cy0+(hi-v)/(hi-lo)*(cy1-cy0);
+  x.fillStyle=K.lossSoft;x.fillRect(cx0,Y(BARRIER),cx1-cx0,Y(lo)-Y(BARRIER));
+  x.strokeStyle=K.loss;x.lineWidth=2;x.beginPath();x.moveTo(cx0,Y(BARRIER));x.lineTo(cx1,Y(BARRIER));x.stroke();
+  x.strokeStyle=K.ink3;x.lineWidth=1.5;x.setLineDash([5,6]);x.beginPath();x.moveTo(cx0,Y(1));x.lineTo(cx1,Y(1));x.stroke();x.setLineDash([]);
+  x.font=`600 14px ${FF}`;x.textAlign="right";x.fillStyle=K.ink3;x.fillText("Start",cx1,Y(1)-8);x.fillStyle=K.loss;x.fillText("\u221235%",cx1,Y(BARRIER)+20);x.textAlign="left";
+  x.strokeStyle=K.ink;x.lineWidth=3;x.lineJoin="round";x.lineCap="round";x.beginPath();pts.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.stroke();
+  x.fillStyle=K.ink;x.beginPath();x.arc(X(0),Y(1),5,0,7);x.fill();
+  pts.forEach((v,i)=>{if(!i)return;const last=i===pts.length-1,below=v<BARRIER;x.beginPath();
+    if(last&&d.n.o==="ki"){x.arc(X(i),Y(v),10,0,7);x.fillStyle=K.loss;x.fill();x.strokeStyle=K.page;x.lineWidth=3;x.stroke();x.beginPath();x.moveTo(X(i)-4,Y(v)-4);x.lineTo(X(i)+4,Y(v)+4);x.moveTo(X(i)+4,Y(v)-4);x.lineTo(X(i)-4,Y(v)+4);x.lineWidth=2.2;x.stroke()}
+    else if(last&&d.n.o==="ac"){x.arc(X(i),Y(v),8,0,7);x.fillStyle=K.page;x.fill();x.strokeStyle=K.ink;x.lineWidth=3;x.stroke()}
+    else{x.arc(X(i),Y(v),last?6:4.5,0,7);x.fillStyle=below?K.page:K.paid;x.fill();if(below){x.strokeStyle=K.loss;x.lineWidth=2;x.stroke()}}});
+  const ty=cy1+30,cw=(cx1-cx0)/26-3;
+  for(let i=1;i<=26;i++){const reached=i<=d.n.h,v=pts[i],last=i===d.n.h;let f=K.rule,st=null;
+    if(reached){if(last&&d.n.o==="ki")f=K.loss;else if(v>=BARRIER)f=K.paid;else{f=K.page;st=K.loss}}
+    const cx=cx0+(i-0.5)*(cx1-cx0)/26-cw/2;x.fillStyle=f;x.beginPath();x.roundRect(cx,ty,cw,20,3);x.fill();if(st){x.strokeStyle=st;x.lineWidth=1.5;x.stroke()}}
+  x.fillStyle=K.ink3;x.font=`500 14px ${FF}`;x.fillText("2 weeks",cx0,ty+44);x.textAlign="right";x.fillText("1 year",cx1,ty+44);x.textAlign="left";
+  x.fillStyle=K.ink3;x.fillText(d.sh?"Filled square: you paid $15 that check":"Filled square: a $12.75 payment",cx0+(cx1-cx0)/2-120,ty+44);
+  // footer
+  x.fillStyle=K.mute;x.font=`500 21px ${FF}`;const ft="Try any stock and week since 2015: ";x.fillText(ft,64,628);
+  const fw=x.measureText(ft).width;x.fillStyle=K.inkC;x.font=`700 21px ${FF}`;x.fillText("clintobi.github.io/note-systems-backtest",64+fw,628);
+  x.fillStyle=K.mute;x.font=`600 21px ${FF}`;x.textAlign="right";x.fillText("@notesystems $NOTE",W-64,628);x.textAlign="left";
+  return {canvas:c,d};
+}
+
+async function openCard(){
+  const btn=$("card").querySelector("span");btn.textContent="Making image...";
+  const {canvas,d}=await drawCard();
+  const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+  if(cardURL)URL.revokeObjectURL(cardURL);
+  cardURL=URL.createObjectURL(blob);
+  const fname=`note-${sym}-${d.n.d}${d.sh?"-shield":""}.png`;
+  cardFile=new File([blob],fname,{type:"image/png"});
+  $("cardImg").src=cardURL;
+  $("cardImg").alt=`Share card: ${d.sh?"protecting $1,000 of":"a $1,000 note on"} ${d.name} started ${fdate(d.n.d)}, ended with ${usd(d.total)} versus ${usd(d.stock)} just holding.`;
+  $("dl").href=cardURL;$("dl").download=fname;
+  const text=d.sh
+    ?`Protecting $1,000 of ${d.name} with a Note Systems note from ${d.when}: ended with ${usd(d.total)}, vs ${usd(d.stock)} just holding.\n\nPick any stock and week since 2015 and see yours:`
+    :`My $1,000 ${d.name} note from ${d.when} would have ended with ${usd(d.total)} (${pct(d.total/BASE-1)}).\n\nPick any stock and week since 2015 and see yours:`;
+  const full=`${text} ${location.href}\n\n@notesystems $NOTE, tool by @0xbuchi`;
+  $("post").href="https://x.com/intent/post?text="+encodeURIComponent(full);
+  const ns=$("nativeShare"),canFiles=navigator.canShare&&navigator.canShare({files:[cardFile]});
+  ns.hidden=!canFiles;
+  ns.onclick=()=>navigator.share({files:[cardFile],text:full}).catch(()=>{});
+  btn.textContent="Make a share image";
+  $("dlg").showModal();
+}
+
 function share(){
-  const url=location.href,t=$("shareTxt"),old="Copy a link to this note";
+  const url=location.href,t=$("shareTxt"),old="Copy link";
   const say=m=>{t.textContent=m;setTimeout(()=>t.textContent=old,2200)};
   if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(url).then(()=>say("Link copied"),()=>say("Copy the link from the address bar"));
   else say("Copy the link from the address bar");
