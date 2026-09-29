@@ -61,6 +61,15 @@ h1{font-size:clamp(2.1rem,5.2vw,3.7rem);font-weight:700;line-height:1.02;letter-
 .controls{margin-top:clamp(28px,4vw,40px);display:grid;gap:26px}
 fieldset{border:0;min-width:0}
 .label{display:block;font-size:14px;font-weight:600;color:var(--cover-mute);margin-bottom:10px}
+.sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-width:640px}
+.sides label{position:relative;display:block;cursor:pointer}
+.sides input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.sides span{display:block;padding:12px 14px;border-radius:12px;background:var(--cover-raise);border:1px solid transparent;font-weight:700;font-size:16px;line-height:1.3;transition:background .2s var(--ease),color .2s var(--ease),border-color .2s}
+.sides span small{display:block;font-size:13px;font-weight:500;color:var(--cover-mute);margin-top:3px;transition:color .2s}
+.sides label:hover span{border-color:var(--cover-line)}
+.sides input:checked+span{background:var(--cover-ink);color:var(--cover)}
+.sides input:checked+span small{color:var(--ink-2)}
+.sides input:focus-visible+span{outline:2px solid var(--cover-ink);outline-offset:2px}
 .stocks{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
 .stocks label{position:relative;display:block;cursor:pointer}
 .stocks input{position:absolute;opacity:0;inset:0;cursor:pointer}
@@ -180,9 +189,16 @@ footer a{color:var(--ink-2)}
       <nav aria-label="Links"><a href="https://github.com/Clintobi/note-systems-backtest">Code and method</a><a href="https://note.systems">Note Systems</a></nav>
     </div>
     <h1>What would $1,000 in a note have done?</h1>
-    <p class="lede">Pick a stock and a week since 2015. This runs the default Note Systems note on real prices and shows you every check, every payment, and how it ended.</p>
+    <p class="lede">Pick a side, a stock and a week since 2015. This runs the default Note Systems note on real prices and shows you every check, every payment, and how it ended.</p>
 
     <div class="controls">
+      <fieldset>
+        <legend class="label">Your side of the note</legend>
+        <div class="sides" id="sides">
+          <label><input type="radio" name="side" value="coupon" checked><span>I have cash (COUPON)<small>Lend $1,000, get paid every two weeks</small></span></label>
+          <label><input type="radio" name="side" value="shield"><span>I own the stock (SHIELD)<small>Keep $1,000 of stock, pay for crash protection</small></span></label>
+        </div>
+      </fieldset>
       <fieldset>
         <legend class="label">Stock</legend>
         <div class="stocks" id="stocks"></div>
@@ -190,7 +206,7 @@ footer a{color:var(--ink-2)}
 
       <div>
         <div class="when-head">
-          <p class="when-date"><small>Money goes in on</small><span id="whenDate" class="num">&nbsp;</span></p>
+          <p class="when-date"><small id="whenL">Money goes in on</small><span id="whenDate" class="num">&nbsp;</span></p>
           <div class="jump"><button type="button" id="worst">Worst week</button><button type="button" id="rand">Random week</button></div>
         </div>
         <div class="strip" id="strip">
@@ -201,9 +217,9 @@ footer a{color:var(--ink-2)}
         <div class="years" id="years" aria-hidden="true"></div>
         <div class="key" aria-hidden="true">
           <span>Each sliver is one note, and taller ones lasted longer. Drag to pick a week.</span>
-          <span><i style="background:var(--strip-early)"></i>Paid back early</span>
+          <span><i style="background:var(--strip-early)"></i><b id="k1" style="font-weight:400">Paid back early</b></span>
           <span><i style="background:var(--strip-cash)"></i>Ran the full year</span>
-          <span><i style="background:var(--strip-loss)"></i>Lost money</span>
+          <span><i style="background:var(--strip-loss)"></i><b id="k3" style="font-weight:400">Lost money</b></span>
         </div>
       </div>
     </div>
@@ -220,7 +236,7 @@ footer a{color:var(--ink-2)}
     <div class="compare">
       <h2>Next to just holding the stock</h2>
       <div class="row">
-        <div class="row-top"><span>The note</span><span><b id="vNote" class="num"></b><em id="pNote" class="num"></em></span></div>
+        <div class="row-top"><span id="lNote">The note</span><span><b id="vNote" class="num"></b><em id="pNote" class="num"></em></span></div>
         <div class="track"><div class="fill f-note" id="fNote"></div><div class="tick" id="tick1"></div></div>
       </div>
       <div class="row">
@@ -237,7 +253,7 @@ footer a{color:var(--ink-2)}
       <h2 id="chartTitle">Every two-week check</h2>
       <p id="chartSub"></p>
     </div>
-    <p class="legend" aria-hidden="true"><span><i class="lg-paid"></i>Check paid $12.75</span><span><i class="lg-skip"></i>Skipped: stock more than 35% down</span><span><i class="lg-zone"></i>Loss zone if the note ends here</span></p>
+    <p class="legend" aria-hidden="true"><span><i class="lg-paid"></i><b id="lg1" style="font-weight:400">Check paid $12.75</b></span><span><i class="lg-skip"></i><b id="lg2" style="font-weight:400">Skipped: stock more than 35% down</b></span><span><i class="lg-zone"></i><b id="lg3" style="font-weight:400">Loss zone if the note ends here</b></span></p>
     <svg id="chart" role="img"></svg>
   </section>
 
@@ -248,6 +264,7 @@ footer a{color:var(--ink-2)}
         <li><svg class="glyph" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="2" width="14" height="14" rx="3" fill="var(--paid)"/></svg><span>You lend $1,000 against one stock for up to a year. Every two weeks the note checks the price. If the stock hasn't fallen more than 35%, <b>you're paid $12.75</b>.</span></li>
         <li><svg class="glyph" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="6.5" fill="none" stroke="var(--ink)" stroke-width="2.4"/></svg><span>If the stock is back at or above where it started, <b>the note ends early and your $1,000 comes back</b>.</span></li>
         <li><svg class="glyph" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="var(--loss)"/><path d="M6 6l6 6M12 6l-6 6" stroke="var(--page)" stroke-width="2" stroke-linecap="round"/></svg><span>If it's <b>down more than 35% at the very last check</b>, you're paid in the stock instead of cash. That's the risk the payments are for.</span></li>
+        <li><svg class="glyph" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5l6 2.2v4.6c0 3.9-2.6 6.9-6 8.2-3.4-1.3-6-4.3-6-8.2V3.7z" fill="var(--ink)"/></svg><span>The other side is <b>SHIELD: someone who owns the stock</b>. They fund those payments, and if the crash happens they hand over their shares and <b>get $1,000 in cash</b>. Switch sides at the top to see it from their seat.</span></li>
       </ul>
     </div>
     <div class="all">
@@ -258,7 +275,7 @@ footer a{color:var(--ink-2)}
   </section>
 
   <footer>
-    <p>Assumes a 1.5% payment every two weeks (the example rate in the Note Systems docs) minus the protocol's 15% fee, so $12.75 per check on $1,000. A check where the stock is more than 35% down pays nothing, and there is no catch-up later. Prices are real daily closes adjusted for splits and dividends. One note was started every Friday from 2015 to 2025, 3,683 in total. This is a backtest, not a forecast, and not financial advice. The notes are still on Note Systems testnet. Code and method: <a href="https://github.com/Clintobi/note-systems-backtest">github.com/Clintobi/note-systems-backtest</a>. Made by <a href="https://x.com/0xbuchi">@0xbuchi</a>, not affiliated with <a href="https://note.systems">Note Systems</a>.</p>
+    <p>Assumes a 1.5% payment every two weeks (the example rate in the Note Systems docs) minus the protocol's 15% fee, so $12.75 per check on $1,000. The SHIELD side pays the full 1.5% ($15) on each paid check, which includes the protocol's cut, plus 0.25% ($2.50) when the note starts. A check where the stock is more than 35% down pays nothing, and there is no catch-up later. Prices are real daily closes adjusted for splits and dividends. One note was started every Friday from 2015 to 2025, 3,683 in total. This is a backtest, not a forecast, and not financial advice. The notes are still on Note Systems testnet. Code and method: <a href="https://github.com/Clintobi/note-systems-backtest">github.com/Clintobi/note-systems-backtest</a>. Made by <a href="https://x.com/0xbuchi">@0xbuchi</a>, not affiliated with <a href="https://note.systems">Note Systems</a>.</p>
   </footer>
 </main>
 
@@ -274,20 +291,26 @@ const usd=x=>"$"+Math.round(x).toLocaleString("en-US");
 const pct=x=>(x>=0?"+":"−")+Math.abs(x*100).toFixed(1)+"%";
 const fdate=s=>new Date(s+"T12:00:00Z").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"});
 const addWeeks=(s,w)=>{const d=new Date(s+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+7*w);return d.toISOString().slice(0,10)};
-let D,sym="NVDA",idx=0;
+let D,sym="NVDA",idx=0,side="coupon";
 const notes=()=>D.stocks[sym].notes;
 const cur=()=>notes()[idx];
-const valueOf=n=>n.o==="ki"?n.c*PAY+BASE*n.p[n.p.length-1]:n.c*PAY+BASE;
+const GPAY=15, SFEE=2.5;
+const couponVal=n=>n.o==="ki"?n.c*PAY+BASE*n.p[n.p.length-1]:n.c*PAY+BASE;
+const shieldVal=n=>(n.o==="ki"?BASE:BASE*n.p[n.p.length-1])-n.c*GPAY-SFEE;
+const valueOf=n=>side==="shield"?shieldVal(n):couponVal(n);
+const edge=n=>valueOf(n)-(side==="shield"?BASE*n.p[n.p.length-1]:BASE);
 
 fetch("notes.json").then(r=>r.json()).then(j=>{
   D=j;
   $("stocks").innerHTML=Object.keys(D.stocks).map(s=>`<label><input type="radio" name="stock" value="${s}"><span>${NAMES[s]}<small>${s}</small></span></label>`).join("");
   $("stocks").addEventListener("change",e=>{const d=cur().d;setStock(e.target.value);setIdx(nearest(d))});
   $("week").addEventListener("input",e=>setIdx(+e.target.value));
-  $("worst").onclick=()=>{const ns=notes();let k=0;ns.forEach((n,i)=>{if(valueOf(n)<valueOf(ns[k]))k=i});setIdx(k)};
+  $("worst").onclick=()=>{const ns=notes();let k=0;ns.forEach((n,i)=>{if(edge(n)<edge(ns[k]))k=i});setIdx(k)};
+  $("sides").addEventListener("change",e=>{side=e.target.value;setStock(sym);setIdx(idx)});
   $("rand").onclick=()=>setIdx(Math.floor(Math.random()*notes().length));
   $("share").onclick=share;
-  const m=/^#([A-Z]+)\/(\d{4}-\d{2}-\d{2})$/.exec(location.hash);
+  const m=/^#([A-Z]+)\/(\d{4}-\d{2}-\d{2})(?:\/(shield))?$/.exec(location.hash);
+  if(m&&m[3]){side="shield";document.querySelector('#sides input[value=shield]').checked=true}
   if(m&&D.stocks[m[1]]){setStock(m[1]);setIdx(nearest(m[2]))}
   else{setStock("NVDA");setIdx(nearest("2018-08-24"))}
   let t;addEventListener("resize",()=>{clearTimeout(t);t=setTimeout(()=>{drawStrip();drawChart(false)},120)});
@@ -306,7 +329,25 @@ function setStock(s){
   $("years").innerHTML=html;
   const cash=ns.filter(x=>x.o==="cash").length,ki=ns.filter(x=>x.o==="ki");
   const worst=ki.length?Math.min(...ki.map(valueOf)):null;
-  $("allTitle").textContent=`All ${n} ${name} notes, ${ns[0].d.slice(0,4)} to 2025`;
+  const sh=side==="shield";
+  $("k1").textContent=sh?"Shares back early":"Paid back early";
+  $("k3").textContent=sh?"Protection paid out":"Lost money";
+  $("allTitle").textContent=`All ${n} ${name} notes, ${ns[0].d.slice(0,4)} to 2025${sh?", from the SHIELD side":""}`;
+  if(sh){
+    const e=ns.map(edge),best=Math.max(...e),worstE=Math.min(...e),avg=e.reduce((a,b)=>a+b,0)/n;
+    const dol=v=>(v>=0?"+":"−")+usd(Math.abs(v));
+    $("allList").innerHTML=[
+      ["Average versus just holding",dol(avg)],
+      ["Protection paid out",`${su.ki.toFixed(1)}%`],
+      ["Biggest save",ki.length?`${dol(best)}`:"Never needed"],
+      ["Most it cost",dol(worstE)]
+    ].map(([a,b])=>`<div><dt>${a}</dt><dd class="num">${b}</dd></div>`).join("");
+    $("allNote").textContent=su.ki===0
+      ?`Nobody protecting ${name} needed it over these years, so SHIELD simply paid for insurance it never used. That is how insurance usually goes.`
+      :avg>0?`On ${name}, buying protection beat just holding on average. The crashes it covered were big enough to pay for all the quiet weeks.`
+      :`Most of the time protection costs a little, like insurance. It paid out on ${su.ki.toFixed(1)}% of notes, mostly ones started between mid 2021 and mid 2022.`;
+    return;
+  }
   $("allList").innerHTML=[
     ["Paid back at the first check",`${Math.round(su.ac1)}%`],
     ["Ran the full year, paid in cash",`${(100*cash/n).toFixed(1)}%`],
@@ -332,7 +373,7 @@ function setIdx(i){
   idx=Math.max(0,Math.min(notes().length-1,i));
   $("week").value=idx;
   $("marker").style.left=`${100*idx/(notes().length-1)}%`;
-  history.replaceState(null,"",`#${sym}/${cur().d}`);
+  history.replaceState(null,"",`#${sym}/${cur().d}${side==="shield"?"/shield":""}`);
   render();
 }
 
@@ -342,6 +383,9 @@ function render(){
   $("whenDate").textContent=fdate(n.d);
   $("week").setAttribute("aria-valuetext",`${fdate(n.d)}, ${name}`);
 
+  if(side==="shield")return renderShield(n,name,fin,weeks,end,ki,early,skipped);
+  $("lNote").textContent="The note";
+  $("lg1").textContent="Check paid $12.75";$("lg2").textContent="Skipped: stock more than 35% down";$("whenL").textContent="Money goes in on";$("lg3").textContent="Loss zone if the note ends here";
   const tag=$("tag");
   if(ki){tag.className="tag t-loss";tag.textContent="Lost money, paid in shares"}
   else if(!early){tag.className="tag t-cash";tag.textContent="Ran the full year, paid in cash"}
@@ -368,16 +412,51 @@ function render(){
   }
   $("story").innerHTML=L.map(t=>`<li>${t}</li>`).join("");
 
+  $("chartSub").textContent=`${fdate(n.d)} to ${fdate(end)}: ${n.h} of 26 checks`+(early?`. The note ended early, so the rest never happened.`:"");
+  finish(total,stock,weeks,name,`Holding ${name} for the same ${weeks} weeks`);
+}
+
+function renderShield(n,name,fin,weeks,end,ki,early,skipped){
+  const total=shieldVal(n),stock=BASE*fin,diff=total-stock;
+  $("lNote").textContent="With protection";
+  $("lg1").textContent="You paid $15 this check";$("lg2").textContent="Free: stock more than 35% down";$("whenL").textContent="Protection starts on";$("lg3").textContent="Protection pays out if the note ends here";
+  const tag=$("tag");
+  if(ki){tag.className="tag t-early";tag.textContent="Protection paid out"}
+  else if(!early){tag.className="tag t-loss";tag.textContent="Full year, protection never paid"}
+  else{tag.className="tag t-cash";tag.textContent=n.h===1?"Shares back in two weeks":`Shares back after ${weeks} weeks`}
+  const vs=Math.abs(diff)<0.5?"the same as just holding":`<span class="num ${diff>=0?"pos":"neg"}">${usd(Math.abs(diff))} ${diff>=0?"more":"less"}</span> than just holding`;
+  $("big").innerHTML=`You'd have ended with <span class="amt num">${usd(total)}</span>, ${vs}.`;
+  const paid=`You paid <b>$15, ${n.c} time${n.c===1?"":"s"}</b>, plus a $2.50 fee at the start${skipped?`. ${skipped} check${skipped===1?" was":"s were"} free because ${name} was more than 35% down`:""}.`;
+  const L=[`You owned <b>$1,000 of ${name}</b> and put it into a note on <b>${fdate(n.d)}</b> to protect it from a crash.`];
+  if(early&&n.h===1){
+    L.push(`Two weeks later ${name} was <b>${(100*(fin-1)).toFixed(1)}% higher</b>, so the note ended right away and <b>your shares came back</b>, worth ${usd(stock)}.`);
+    L.push(`The protection cost you <b>one payment of $15 plus a $2.50 fee</b>.`);
+  }else if(early){
+    L.push(`${name} dipped below where it started, so the note kept going, checking every two weeks.`);
+    L.push(paid);
+    L.push(`After <b>${weeks} weeks</b> ${name} climbed back above its starting price, so the note ended and <b>your shares came back</b>.`);
+  }else if(!ki){
+    L.push(`${name} never climbed back to its starting price, so the note ran the full year.`);
+    L.push(paid);
+    L.push(`At the end ${name} was down ${(100*(1-fin)).toFixed(1)}%, but not past the 35% line, so <b>the protection never paid out</b>. You kept your shares, worth ${usd(stock)}.`);
+  }else{
+    L.push(paid);
+    L.push(`At the last check ${name} was <b>down ${(100*(1-fin)).toFixed(1)}%</b>, past the 35% line. <b>The protection paid out</b>: your shares went to the other side and you got <b>$1,000 in cash</b> for shares worth ${usd(stock)}.`);
+  }
+  $("story").innerHTML=L.map(t=>`<li>${t}</li>`).join("");
+  $("chartSub").textContent=`${fdate(n.d)} to ${fdate(end)}: ${n.h} of 26 checks`+(early?`. The note ended early, so the rest never happened.`:"");
+  finish(total,stock,weeks,name,`Holding ${name} unprotected for the same ${weeks} weeks`);
+}
+
+function finish(total,stock,weeks,name,holdLabel){
   const max=Math.max(total,stock,BASE)*1.04,w=v=>`${100*Math.max(v,0)/max}%`,cls=v=>"num "+(v>=BASE?"pos":"neg");
   $("vNote").textContent=usd(total);$("vNote").className=cls(total);
   $("pNote").textContent=pct(total/BASE-1);$("pNote").className=cls(total);
-  $("lStock").textContent=`Holding ${name} for the same ${weeks} weeks`;
+  $("lStock").textContent=holdLabel;
   $("vStock").textContent=usd(stock);$("vStock").className=cls(stock);
-  $("pStock").textContent=pct(fin-1);$("pStock").className=cls(stock);
+  $("pStock").textContent=pct(stock/BASE-1);$("pStock").className=cls(stock);
   $("fNote").style.width=w(total);$("fStock").style.width=w(stock);
   $("tick1").style.left=$("tick2").style.left=`calc(${w(BASE)} - 1px)`;
-
-  $("chartSub").textContent=`${fdate(n.d)} to ${fdate(end)}: ${n.h} of 26 checks`+(early?`. The note ended early, so the rest never happened.`:"");
   drawChart(true);
   if(!RM.matches)$("big").animate([{opacity:0,transform:"translateY(6px)"},{opacity:1,transform:"none"}],{duration:420,easing:EASE});
 }
@@ -415,7 +494,7 @@ function drawChart(animate){
   });
   // the tape: one cell per scheduled check
   const ty=H-B+14,cw=Math.max(3,(W-padL-padR)/26-(narrow?2:4));
-  s+=`<text x="${X0-10}" y="${ty+cellH/2+4}" text-anchor="end" font-size="${fs}" fill="${C.ink3}">Paid</text>`;
+  s+=`<text x="${X0-10}" y="${ty+cellH/2+4}" text-anchor="end" font-size="${fs}" fill="${C.ink3}">${side==="shield"?"Paid":"Paid"}</text>`;
   for(let i=1;i<=26;i++){
     const reached=i<=n.h,v=pts[i],last=i===n.h;
     let fill=C.rule,stroke="none";
