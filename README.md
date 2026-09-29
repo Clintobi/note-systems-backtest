@@ -11,38 +11,43 @@ Every number in the article can be reproduced from this code.
 - **Universe:** the eight Stock Tokens with feeds on Note Systems testnet: NVDA, TSLA, AAPL, MSFT, AMZN, META, COIN, HOOD.
 - **Prices:** daily closes adjusted for splits and dividends (Yahoo Finance), which approximates the ERC-8056 multiplier already folded into Stock Token feeds.
 - **Notes:** one new note struck at every Friday close from January 2015 to September 2025 (COIN from April 2021, HOOD from August 2021). 3,683 notes in total.
-- **Terms (the standing template in the docs, Sep 2026):** 8 weekly observations, autocall at 100% of S0 on intermediate observations, coupon paid when the close is at or above 65% of S0, no coupon memory, knock-in judged only at the final observation (physical settlement at S0). Each observation uses the last close on or before the scheduled date.
-- **Economics:** reference coupon of 50 bps per observation (the live coupon floats between 25 and 125 bps with demand), 25% coupon fee, 0.75% notional fee paid by SHIELD at strike. Series created under the earlier schedule use 15% and 0.25%.
+- **Terms:** the per-underlying standing templates published in the docs (concepts/autocallable-notes, "Standing templates", testnet deployment 11, 29 Sep 2026): twelve weekly coupon observations five trading days apart, knock-in judged only at the final observation (physical settlement at S0), no coupon memory.
 
-## Headline results (current template)
+| | AAPL | MSFT | AMZN | NVDA | META | TSLA | HOOD | COIN |
+|---|---|---|---|---|---|---|---|---|
+| Autocall | 105% | 105% | 105% | 105% | 105% | 110% | 110% | 110% |
+| Barrier | 88% | 85% | 85% | 80% | 80% | 75% | 60% | 60% |
+| Coupon band, bps/week (floor, reference, cap) | 10 / 30 / 60 | 10 / 45 / 80 | 25 / 50 / 95 | 15 / 45 / 140 | 30 / 55 / 100 | 30 / 55 / 150 | 25 / 75 / 130 | 40 / 75 / 160 |
+
+- **Economics:** coupon held at each template's reference rate; 25% coupon fee; 0.75% notional fee paid by SHIELD at strike.
+
+## Headline results (standing templates)
 
 | | |
 |---|---|
 | Notes | 3,683 |
-| Autocalled at the first check (1 week) | 56.1% |
-| Ended within four weeks | 79.0% |
-| Ended early at any point | 85.3% |
-| Ran all 8 weeks, repaid in cash | 13.5% |
-| Knocked in | 1.1% (42 notes; average loss 43.6%, worst 61.1%) |
-| Knock-ins from notes struck Sep 2021 to Nov 2022 | 30 of 42 |
-| Ran all 8 weeks, ended down but above the barrier (SHIELD paid, protection never paid out) | 12.2% |
-| SHIELD vs holding the stock, at 50 bps | -1.6% per note on average |
+| Average length | 6.25 weeks (median 5); the docs expect six to eight |
+| Autocalled at the first check | 13.6% |
+| Ended early at any point | 73.1% |
+| Ran all 12 weeks, repaid in cash | 21.6% |
+| Knocked in | 5.3% (194 notes; average loss 31.7%, worst 73.4%) |
+| Knock-ins from notes struck Sep 2021 to Dec 2022 | 102 of 194 |
+| Ran to term below S0 but above the barrier (SHIELD paid, protection never paid out) | 15.7% |
+| SHIELD vs holding the stock | -2.0% per note on average (every stock negative) |
 
-Break-even gross coupon per weekly observation (COUPON side, average profit of zero):
+Break-even gross coupon per weekly observation (COUPON side, average profit of zero) vs the template reference:
 
-| AAPL | MSFT | AMZN | META | TSLA | NVDA | HOOD | COIN |
-|---|---|---|---|---|---|---|---|
-| 0 bps | 0 | 0 | 12 | 24 | 36 | 96 | 127 |
+| | AAPL | MSFT | AMZN | NVDA | META | TSLA | HOOD | COIN |
+|---|---|---|---|---|---|---|---|---|
+| Break-even, 2015-2025 | 31 | 6 | 28 | 46 | 36 | 44 | 94 | 87 |
+| Template reference | 30 | 45 | 50 | 45 | 55 | 55 | 75 | 75 |
+| Template cap | 60 | 80 | 95 | 140 | 100 | 150 | 130 | 160 |
 
-AAPL, MSFT and AMZN had no knock-ins in the sample, so their break-even is zero; that reflects the decade, not a claim that those notes are riskless. COIN's break-even sits just above the template's 125 bps cap.
+The interactive page and `docs/notes.json` use these templates (`backtest/gen_site_data.py`).
 
-Rolling the COUPON side at 50 bps (a new note the Friday after each one ends, from January 2015): about 15% a year on AAPL, MSFT, AMZN and META, 10% on TSLA, roughly flat on NVDA, -3% on HOOD and -28% on COIN.
+### Earlier templates
 
-The interactive page and `docs/notes.json` use this template (`backtest/gen_site_data.py`).
-
-### Earlier template
-
-`backtest.py`, `deep.py`, `roll.py` and the PNGs in `charts/` model the launch-era docs example: 26 fortnightly observations, 150 bps per observation, 15% and 0.25% fees. Under that template 58.6% of notes autocalled at the first check, 2.1% knocked in (average loss 60.1%), and 72 of 76 knock-ins came from notes struck Jul 2021 to May 2022.
+`backtest.py`, `deep.py`, `roll.py` and the PNGs in `charts/` model the launch-era docs example (26 fortnightly observations, 65% barrier, 100% autocall, 150 bps, 15% and 0.25% fees). Those results are kept for reference only.
 
 ## Run it
 
