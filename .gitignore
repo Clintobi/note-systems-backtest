@@ -1,0 +1,6 @@
+prices.json
+results.json
+roll.json
+deep.json
+__pycache__/
+.venv/
