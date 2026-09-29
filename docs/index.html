@@ -4,182 +4,182 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Note Simulator</title>
-<meta name="description" content="Pick any stock and any week since 2015 and see how a Note Systems autocallable note would have ended. 3,683 notes backtested on real prices.">
-<meta property="og:title" content="What would your note have done?">
-<meta property="og:description" content="3,683 Note Systems notes backtested on real stock prices, 2015 to 2025.">
+<meta name="description" content="Say you put $1,000 into a Note Systems note on any date since 2015. See exactly what would have happened to your money.">
+<meta property="og:title" content="What would $1,000 in a Note Systems note have done?">
+<meta property="og:description" content="Pick a stock and a date since 2015. Backtested on real prices.">
 <meta property="og:image" content="https://clintobi.github.io/note-systems-backtest/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#141414;--bg2:#1c1c1c;--card:#1f1f1f;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);--ink:#fff;--ink2:#a3a3a3;--ink3:#6e6e6e;--lav:#a99bff;--p:#7B61FF;--b:#4C8DF6;--g:#E8B21E;--r:#F0544F;--gr:#3DD68C}
+:root{--card:#1f1f1f;--bg2:#262626;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);--ink:#fff;--ink2:#a8a8a8;--ink3:#707070;--lav:#a99bff;--gold:#E8B21E;--red:#F0544F;--green:#3DD68C}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{overflow-x:hidden}
-body{background:linear-gradient(#232323,#141414 60%) fixed;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
-.wrap{max-width:980px;margin:0 auto;padding:28px 16px 60px}
-.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
-.mark{font-weight:800;font-size:18px}
-.kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lav)}
-h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:18px 0 10px}
-.sub{color:var(--ink2);font-size:17px;line-height:1.5;max-width:720px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 14px}
-.chip{background:var(--bg2);border:1px solid var(--line2);color:var(--ink);font:600 14px Inter,sans-serif;padding:9px 14px;border-radius:999px;cursor:pointer}
+body{background:linear-gradient(#232323,#141414 70%) fixed;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 64px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--lav)}
+.mark{font-weight:800;font-size:17px}
+h1{font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin:18px 0 18px}
+.how{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;color:var(--ink2);font-size:16px;line-height:1.55}
+.how b{color:var(--ink)}
+.how ol{padding-left:20px;margin-top:6px}
+.how li{margin:4px 0}
+.step{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:28px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--bg2);border:1px solid var(--line2);color:var(--ink);font:600 15px Inter,sans-serif;padding:10px 15px;border-radius:999px;cursor:pointer}
 .chip[aria-pressed=true]{background:#fff;color:#111;border-color:#fff}
-.stripwrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 10px}
-.striphead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;color:var(--ink2);font-size:13px}
-.legend{display:flex;gap:14px;flex-wrap:wrap}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
-#strip{width:100%;height:56px;display:block;cursor:pointer;touch-action:none}
-.years{position:relative;height:18px;font:12px "JetBrains Mono",monospace;color:var(--ink3)}
-.years span{position:absolute;transform:translateX(-50%)}
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 0}
-.controls label{color:var(--ink2);font-size:14px}
-input[type=date]{background:var(--bg2);color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font:14px Inter,sans-serif;color-scheme:dark}
-.btn{background:transparent;color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font:600 14px Inter,sans-serif;cursor:pointer}
-.btn:hover,.chip:hover{border-color:#fff}
-.result{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
-.outcome{font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.01em;line-height:1.15}
-.outcome .dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:10px;vertical-align:2px}
-.story{color:var(--ink2);font-size:16px;line-height:1.55;margin:10px 0 18px;max-width:760px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.stat{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.stat b{display:block;font-size:22px;font-weight:700;margin-top:4px}
-.stat small{font-size:12px;color:var(--ink2)}
-.pos{color:var(--gr)}.neg{color:var(--r)}
-svg text{font-family:"JetBrains Mono",monospace}
-#path{width:100%;height:auto;display:block;margin-top:18px}
-.ctx{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.note{color:var(--ink3);font-size:13px;line-height:1.6;margin-top:28px}
+.chip:hover{border-color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select{background:var(--bg2);color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font:600 15px Inter,sans-serif;color-scheme:dark;cursor:pointer}
+.btn{background:transparent;color:var(--ink2);border:1px solid var(--line2);border-radius:10px;padding:10px 13px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn:hover{color:#fff;border-color:#fff}
+.receipt{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.verdict{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:999px;margin-bottom:12px}
+.v-good{background:rgba(61,214,140,.14);color:var(--green)}
+.v-bad{background:rgba(240,84,79,.16);color:var(--red)}
+.v-ok{background:rgba(232,178,30,.16);color:var(--gold)}
+.lines{list-style:none;border-top:1px solid var(--line)}
+.lines li{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:17px;line-height:1.45}
+.lines .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--bg2);color:var(--ink2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.tot{background:var(--bg2);border-radius:12px;padding:14px 16px}
+.tot small{color:var(--ink2);font-size:14px}
+.tot b{display:block;font-size:30px;font-weight:800;margin-top:4px;letter-spacing:-.01em}
+.tot span{font-size:15px;font-weight:600}
+.pos{color:var(--green)}.neg{color:var(--red)}
+#chart{width:100%;height:auto;display:block;margin-top:20px}
+svg text{font-family:Inter,sans-serif}
+.summary{margin-top:18px;color:var(--ink2);font-size:16px;line-height:1.55;border-top:1px solid var(--line);padding-top:16px}
+.summary b{color:var(--ink)}
+.note{color:var(--ink3);font-size:13px;line-height:1.6;margin-top:26px}
 .note a{color:var(--lav)}
-@media (max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}.ctx{grid-template-columns:1fr}}
+@media (max-width:560px){.totals{grid-template-columns:1fr}.lines li{font-size:16px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><span class="kicker">Note Systems · backtest</span><span class="mark">@0xbuchi</span></div>
-  <h1>What would your note have done?</h1>
-  <p class="sub">Every autocallable note on Note Systems' default terms, struck every Friday from 2015 to 2025 on real stock prices: 3,683 notes. Pick a stock, then click any week to see how that note ended.</p>
+  <div class="top"><span class="kicker">Note Systems · real prices, 2015 to 2025</span><span class="mark">@0xbuchi</span></div>
+  <h1>Say you put $1,000 into a note. What would have happened?</h1>
 
+  <div class="how">
+    <b>How the note works, in three lines.</b> You lend $1,000 against one stock for up to a year.
+    <ol>
+      <li>Every two weeks, if the stock hasn't fallen more than 35%, <b>you get paid $12.75</b>.</li>
+      <li>If the stock is back at or above where it started, <b>the note ends early and you get your $1,000 back</b>.</li>
+      <li>If the stock is <b>down more than 35% at the very end</b>, you're paid in the stock instead of cash. That's the risk you're being paid for.</li>
+    </ol>
+  </div>
+
+  <div class="step">1 · Pick a stock</div>
   <div class="chips" id="chips" role="group" aria-label="Stock"></div>
 
-  <div class="stripwrap">
-    <div class="striphead">
-      <span id="striplabel">Every note on this stock, by start week</span>
-      <div class="legend">
-        <span><i style="background:var(--p)"></i>Ended at first check</span>
-        <span><i style="background:var(--b)"></i>Ended early later</span>
-        <span><i style="background:var(--g)"></i>Ran the full year</span>
-        <span><i style="background:var(--r)"></i>Knocked in</span>
-      </div>
-    </div>
-    <canvas id="strip" height="56" aria-label="Timeline of notes; click a week"></canvas>
-    <div class="years" id="years"></div>
-    <div class="controls">
-      <label for="date">Start date</label><input type="date" id="date">
-      <button class="btn" id="rand">Random note</button>
-      <button class="btn" id="worst">Worst note</button>
-    </div>
+  <div class="step">2 · Pick when you put the money in</div>
+  <div class="row">
+    <select id="month" aria-label="Month"></select>
+    <select id="year" aria-label="Year"></select>
+    <button class="btn" id="bad">Show me a bad one</button>
+    <button class="btn" id="rand">Surprise me</button>
   </div>
 
-  <div class="result" id="result" aria-live="polite">
-    <div class="outcome" id="outcome"></div>
-    <p class="story" id="story"></p>
-    <div class="grid">
-      <div class="stat"><small>Coupons collected</small><b id="s-c"></b></div>
-      <div class="stat"><small>Lasted</small><b id="s-h"></b></div>
-      <div class="stat"><small>Cash side (COUPON) return</small><b id="s-r"></b></div>
-      <div class="stat"><small>Insurance buyer (SHIELD) vs just holding</small><b id="s-sh"></b></div>
+  <div class="receipt" aria-live="polite">
+    <span class="verdict" id="verdict"></span>
+    <ul class="lines" id="lines"></ul>
+    <div class="totals">
+      <div class="tot"><small>You ended with</small><b id="t-note"></b><span id="t-note-p"></span></div>
+      <div class="tot"><small id="t-stock-l"></small><b id="t-stock"></b><span id="t-stock-p"></span></div>
     </div>
-    <svg id="path" viewBox="0 0 900 300" role="img" aria-label="Stock price at each check vs start and barrier"></svg>
-    <div class="ctx">
-      <div class="stat"><small>Break-even coupon on this stock</small><b id="c-f"></b></div>
-      <div class="stat"><small>Notes that knocked in</small><b id="c-k"></b></div>
-      <div class="stat"><small>Ended at the very first check</small><b id="c-a"></b></div>
-    </div>
+    <svg id="chart" viewBox="0 0 700 250" role="img" aria-label="The stock's price at each two-week check"></svg>
+    <p class="summary" id="summary"></p>
   </div>
 
-  <p class="note">How it works: each note checks the official close every two weeks for up to a year. At or above the start price, it ends early and pays back. At or above 65% of the start, it pays a coupon. Only a final close below 65% "knocks in", paying the cash side in stock at the start price. Returns use the docs' illustrative 150 bps coupon per check, net of the 15% fee. Prices are Yahoo Finance closes adjusted for splits and dividends. Past results are hypothetical and not a forecast; nothing here is financial advice. Code and method: <a href="https://github.com/Clintobi/note-systems-backtest">github.com/Clintobi/note-systems-backtest</a>. Built by <a href="https://x.com/0xbuchi">@0xbuchi</a>; not affiliated with <a href="https://note.systems">Note Systems</a>.</p>
+  <p class="note">Assumes a 1.5% payment every two weeks (the example rate in the Note Systems docs) minus the protocol's 15% fee, so $12.75 per check on $1,000. Prices are real daily closes adjusted for splits and dividends. One note was started every Friday from 2015 to 2025, 3,683 in total. This is a backtest, not a forecast, and not financial advice. The notes are still on Note Systems testnet. Code and method: <a href="https://github.com/Clintobi/note-systems-backtest">github.com/Clintobi/note-systems-backtest</a> · by <a href="https://x.com/0xbuchi">@0xbuchi</a> · not affiliated with <a href="https://note.systems">Note Systems</a>.</p>
 </div>
 
 <script>
-const COL={ac1:"#7B61FF",ac:"#4C8DF6",cash:"#E8B21E",ki:"#F0544F"};
 const NAMES={NVDA:"Nvidia",TSLA:"Tesla",AAPL:"Apple",MSFT:"Microsoft",AMZN:"Amazon",META:"Meta",COIN:"Coinbase",HOOD:"Robinhood"};
-let D,sym="NVDA",idx=0;
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const PAY=12.75, BASE=1000;
+let D, sym="NVDA", cur=null;
 const $=id=>document.getElementById(id);
-const cls=n=>n.o==="ac"&&n.h===1?"ac1":n.o;
-const pct=(x,d=1)=>(x>0?"+":"")+(100*x).toFixed(d)+"%";
-const fmtDate=s=>new Date(s+"T12:00:00Z").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
+const usd=x=>"$"+Math.round(x).toLocaleString("en-US");
+const usd2=x=>"$"+x.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const pctTxt=x=>(x>=0?"+":"−")+Math.abs(x*100).toFixed(1)+"%";
+const fdate=s=>new Date(s+"T12:00:00Z").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"});
 const addWeeks=(s,w)=>{const d=new Date(s+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+7*w);return d.toISOString().slice(0,10)};
+const notes=()=>D.stocks[sym].notes;
 
-fetch("notes.json").then(r=>r.json()).then(j=>{D=j;initChips();pick("NVDA",true)});
+fetch("notes.json").then(r=>r.json()).then(j=>{
+  D=j;
+  $("chips").innerHTML=Object.keys(D.stocks).map(s=>`<button class="chip" data-s="${s}" aria-pressed="false">${NAMES[s]}</button>`).join("");
+  $("chips").onclick=e=>{const b=e.target.closest(".chip");if(b)selectStock(b.dataset.s,true)};
+  $("month").innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+  $("month").onchange=$("year").onchange=fromPickers;
+  $("bad").onclick=()=>{const ns=notes();let k=0;ns.forEach((n,i)=>{if(n.r<ns[k].r)k=i});setNote(ns[k])};
+  $("rand").onclick=()=>{const ns=notes();setNote(ns[Math.floor(Math.random()*ns.length)])};
+  selectStock("NVDA",false);
+  const start=notes().find(n=>n.d>="2018-08-24")||notes()[0]; setNote(start);
+});
 
-function initChips(){
-  $("chips").innerHTML=Object.keys(D.stocks).map(s=>`<button class="chip" data-s="${s}" aria-pressed="false">${NAMES[s]||s}</button>`).join("");
-  $("chips").onclick=e=>{const b=e.target.closest(".chip");if(b)pick(b.dataset.s,true)};
-}
-function notes(){return D.stocks[sym].notes}
-function pick(s,resetDate){
+function selectStock(s,keepDate){
   sym=s;document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===s));
-  const ns=notes();$("date").min=ns[0].d;$("date").max=ns[ns.length-1].d;
-  if(resetDate){const k=ns.findIndex(n=>n.o==="ki");idx=k>=0?k:Math.floor(ns.length/2);}
-  idx=Math.min(idx,ns.length-1);
-  const su=D.stocks[s].summary;
-  $("c-f").textContent=su.fair_bps===0?"0 bps (never knocked in)":su.fair_bps+" bps per check";
-  $("c-k").textContent=su.ki+"%";$("c-a").textContent=su.ac1+"%";
-  $("striplabel").textContent=`Every ${NAMES[s]} note, by start week (${su.n} notes)`;
-  drawStrip();show();
+  const ns=notes(),y0=+ns[0].d.slice(0,4),y1=+ns[ns.length-1].d.slice(0,4);
+  $("year").innerHTML=Array.from({length:y1-y0+1},(_,i)=>`<option>${y0+i}</option>`).join("");
+  if(keepDate&&cur){const target=cur.d;const n=ns.find(n=>n.d>=target)||ns[ns.length-1];setNote(n)}
 }
-function drawStrip(){
-  const c=$("strip"),ns=notes(),dpr=window.devicePixelRatio||1,w=c.clientWidth;
-  c.width=w*dpr;c.height=56*dpr;const g=c.getContext("2d");g.scale(dpr,dpr);g.clearRect(0,0,w,56);
-  const bw=w/ns.length;
-  ns.forEach((n,i)=>{g.fillStyle=COL[cls(n)];g.fillRect(i*bw,6,Math.max(bw-(bw>3?1:0),1),44)});
-  g.strokeStyle="#fff";g.lineWidth=2;g.strokeRect(idx*bw-1,2,Math.max(bw,2)+2,52);
-  const y0=+ns[0].d.slice(0,4),y1=+ns[ns.length-1].d.slice(0,4);let h="";
-  for(let y=y0+(ns[0].d.slice(5)>"01-15"?1:0);y<=y1;y++){const k=ns.findIndex(n=>n.d>=y+"-01-01");if(k>=0)h+=`<span style="left:${(k/ns.length)*100}%">${y}</span>`}
-  $("years").innerHTML=h;
+function fromPickers(){
+  const y=$("year").value,m=String($("month").value).padStart(2,"0"),ns=notes();
+  setNote(ns.find(n=>n.d>=`${y}-${m}-01`)||ns[ns.length-1]);
 }
-function stripPick(ev){const r=$("strip").getBoundingClientRect();const x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;idx=Math.max(0,Math.min(notes().length-1,Math.floor(x/r.width*notes().length)));drawStrip();show()}
-$("strip").addEventListener("click",stripPick);
-$("strip").addEventListener("mousemove",e=>{if(e.buttons===1)stripPick(e)});
-$("strip").addEventListener("touchmove",e=>{e.preventDefault();stripPick(e)},{passive:false});
-$("date").onchange=e=>{const v=e.target.value,ns=notes();let k=ns.findIndex(n=>n.d>=v);if(k<0)k=ns.length-1;idx=k;drawStrip();show()};
-$("rand").onclick=()=>{idx=Math.floor(Math.random()*notes().length);drawStrip();show()};
-$("worst").onclick=()=>{const ns=notes();let k=0;ns.forEach((n,i)=>{if(n.r<ns[k].r)k=i});idx=k;drawStrip();show()};
-window.addEventListener("resize",drawStrip);
-
-function show(){
-  const n=notes()[idx],c=cls(n),name=NAMES[sym],fin=n.p[n.p.length-1],end=addWeeks(n.d,2*n.h);
-  $("date").value=n.d;
-  const head={ac1:"Autocalled at the first check",ac:`Autocalled after ${2*n.h} weeks`,cash:"Ran the full year, paid back in cash",ki:"Knocked in: paid back in stock"}[c];
-  $("outcome").innerHTML=`<span class="dot" style="background:${COL[c]}"></span>${head}`;
-  const s0=`$${n.s0.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  let st=`Struck on ${fmtDate(n.d)} with ${name} at ${s0} (split-adjusted). `;
-  if(c==="ac1")st+=`Two weeks later ${name} closed ${(100*(fin-1)).toFixed(1)}% above the start, so the note ended immediately: principal back plus one coupon.`;
-  else if(c==="ac")st+=`${name} spent a while below its starting price, then closed back above it on ${fmtDate(end)}, ending the note early. ${n.c} of ${n.h} checks paid a coupon.`;
-  else if(c==="cash")st+=`${name} never got back to its starting price but never finished below the barrier, so the note ran all 26 checks and repaid in cash on ${fmtDate(end)}. The insurance buyer paid all year and the protection never paid out.`;
-  else st+=`On the final check (${fmtDate(end)}) ${name} had fallen ${(100*(1-fin)).toFixed(1)}% from the start, below the 65% barrier. The cash side received ${name} valued at the old price, worth ${(100*fin).toFixed(0)}% of the deposit. The insurance buyer swapped its shares for full cash.`;
-  $("story").textContent=st;
-  $("s-c").textContent=`${n.c}`;$("s-h").textContent=`${2*n.h} weeks`;
-  const r=$("s-r");r.textContent=pct(n.r);r.className=n.r>=0?"pos":"neg";
-  const sh=$("s-sh");sh.textContent=pct(n.sh);sh.className=n.sh>=0?"pos":"neg";
-  drawPath(n,c);
+function setNote(n){
+  cur=n;$("year").value=n.d.slice(0,4);$("month").value=+n.d.slice(5,7);
+  const name=NAMES[sym],weeks=2*n.h,fin=n.p[n.p.length-1],end=addWeeks(n.d,weeks),paid=n.c*PAY;
+  const early=n.o==="ac",ki=n.o==="ki";
+  const total=ki?paid+BASE*fin:paid+BASE,stock=BASE*fin;
+  const L=[];
+  L.push(`You put <b>$1,000</b> into ${["Nvidia","Apple","Amazon"].includes(name)?"an":"a"} ${name} note on <b>${fdate(n.d)}</b>.`);
+  if(early&&n.h===1){
+    L.push(`Two weeks later, ${name} was <b>${(100*(fin-1)).toFixed(1)}% higher</b> than when you started, so the note ended right away.`);
+    L.push(`You got your <b>$1,000 back plus one payment of $12.75</b>. Done in two weeks.`);
+  }else if(early){
+    L.push(`${name} dipped below where it started, and the note kept checking every two weeks.`);
+    L.push(`You got paid <b>$12.75, ${n.c} time${n.c===1?"":"s"}</b>${n.c<n.h?` (${n.h-n.c} check${n.h-n.c===1?" was":"s were"} skipped because ${name} had fallen too far)`:""}.`);
+    L.push(`After <b>${weeks} weeks</b>, ${name} climbed back above where it started, so the note ended early and <b>you got your $1,000 back</b>.`);
+  }else if(!ki){
+    L.push(`${name} never climbed back to where it started, so the note ran the full year.`);
+    L.push(`You got paid <b>$12.75, ${n.c} times</b>${n.c<n.h?` (${n.h-n.c} skipped when ${name} had fallen too far)`:""}.`);
+    L.push(`At the end ${name} was down ${(100*(1-fin)).toFixed(1)}%, but not more than 35%, so <b>you got your $1,000 back in cash</b>.`);
+  }else{
+    L.push(`You got paid <b>$12.75, ${n.c} time${n.c===1?"":"s"}</b> before things went wrong${n.c<n.h?` (${n.h-n.c} payment${n.h-n.c===1?" was":"s were"} skipped while ${name} was down too far)`:""}.`);
+    L.push(`At the end of the year ${name} was <b>down ${(100*(1-fin)).toFixed(1)}%</b>, more than 35%. So instead of $1,000 cash, <b>you got ${name} shares worth ${usd(stock)}</b>.`);
+  }
+  $("lines").innerHTML=L.map((t,i)=>`<li><span class="n">${i+1}</span><span>${t}</span></li>`).join("");
+  const v=$("verdict");
+  if(ki){v.className="verdict v-bad";v.textContent="Lost money"}
+  else if(n.o==="cash"){v.className="verdict v-ok";v.textContent="Full year, paid in cash"}
+  else{v.className="verdict v-good";v.textContent=n.h===1?"Paid back in two weeks":`Paid back after ${weeks} weeks`}
+  $("t-note").textContent=usd(total);$("t-note").className=total>=BASE?"pos":"neg";
+  $("t-note-p").textContent=`${pctTxt(total/BASE-1)} with the note`;
+  $("t-stock-l").textContent=`If you'd just bought ${name} instead`;
+  $("t-stock").textContent=usd(stock);$("t-stock").className=stock>=BASE?"pos":"neg";
+  $("t-stock-p").textContent=`${pctTxt(fin-1)} by ${fdate(end)}`;
+  drawChart(n,name);
+  const su=D.stocks[sym].summary,ns=notes(),early2=ns.filter(x=>x.o==="ac").length;
+  $("summary").innerHTML=`Out of <b>${su.n} ${name} notes</b> started since ${ns[0].d.slice(0,4)}, <b>${(100*early2/su.n).toFixed(0)}% paid back early</b>, and <b>${su.ki}% ended in a loss</b>. ${su.ki===0?`Not one ${name} note lost money in this period, which says more about those years than about the stock.`:(su.ki>5?`${name} is one of the riskier stocks to write notes on.`:"")}`;
 }
-function drawPath(n,c){
-  const W=900,H=300,L=56,R=20,T=24,B=40,pts=n.p,lo=Math.min(0.3,...pts)-0.02,hi=Math.max(1.3,...pts)+0.02;
-  const X=k=>L+(k/26)*(W-L-R),Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
-  let s=`<rect x="${L}" y="${Y(0.65)}" width="${W-L-R}" height="${Y(lo)-Y(0.65)}" fill="#F0544F" opacity=".07"/>`;
-  [[1,"#E8B21E","Start price (autocall)","6 6"],[0.65,"#F0544F","Barrier (65%)",""]].forEach(([v,col,lab,da])=>{s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${col}" stroke-width="1.5" ${da?`stroke-dasharray="${da}"`:""}/><text x="${W-R}" y="${Y(v)-7}" fill="${col}" font-size="13" text-anchor="end">${lab}</text>`});
-  for(const v of [0.5,1.5]) if(v>lo&&v<hi) s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#fff" opacity=".06"/>`;
-  [lo<0.5?0.5:null,0.65,1,hi>1.5?1.5:null].filter(v=>v!==null).forEach(v=>s+=`<text x="${L-8}" y="${Y(v)+4}" fill="#a3a3a3" font-size="12" text-anchor="end">${Math.round(v*100)}%</text>`);
-  for(let k=0;k<=26;k+=13) s+=`<text x="${X(k)}" y="${H-12}" fill="#6e6e6e" font-size="12" text-anchor="${k===0?"start":k===26?"end":"middle"}">${k===0?"start":"week "+2*k}</text>`;
-  const all=[[0,1],...pts.map((v,i)=>[i+1,v])];
-  s+=`<polyline fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" points="${all.map(([k,v])=>X(k)+","+Y(v)).join(" ")}"/>`;
-  pts.forEach((v,i)=>{const last=i===pts.length-1,col=last?COL[c]:(v>=0.65?"#3DD68C":"#6e6e6e");s+=`<circle cx="${X(i+1)}" cy="${Y(v)}" r="${last?7:4.5}" fill="${col}" stroke="#141414" stroke-width="2"/>`});
-  s+=`<circle cx="${X(0)}" cy="${Y(1)}" r="4.5" fill="#fff"/>`;
-  s+=`<text x="${L}" y="14" fill="#a3a3a3" font-size="12">${NAMES[sym]} at each check, vs its start price · green = coupon paid, grey = skipped</text>`;
-  $("path").innerHTML=s;
+function drawChart(n,name){
+  const W=700,H=250,L=50,R=16,T=30,B=34,pts=[1,...n.p];
+  const lo=Math.min(0.5,...pts)-0.05,hi=Math.max(1.2,...pts)+0.05;
+  const X=i=>L+(i/26)*(W-L-R),Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let s=`<text x="0" y="16" fill="#a8a8a8" font-size="14" font-weight="600">${name}'s price at each two-week check</text><line x1="${W-330}" x2="${W-306}" y1="11" y2="11" stroke="#E8B21E" stroke-width="2" stroke-dasharray="5 4"/><text x="${W-300}" y="16" fill="#E8B21E" font-size="13" font-weight="600">Where it started</text><line x1="${W-180}" x2="${W-156}" y1="11" y2="11" stroke="#F0544F" stroke-width="2"/><text x="${W-150}" y="16" fill="#F0544F" font-size="13" font-weight="600">Danger line (−35%)</text>`;
+  s+=`<rect x="${L}" y="${Y(0.65)}" width="${W-L-R}" height="${Y(lo)-Y(0.65)}" fill="#F0544F" opacity=".08"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${Y(1)}" y2="${Y(1)}" stroke="#E8B21E" stroke-width="1.5" stroke-dasharray="6 6"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${Y(0.65)}" y2="${Y(0.65)}" stroke="#F0544F" stroke-width="1.5"/>`;
+  s+=`<polyline fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" points="${pts.map((v,i)=>X(i)+","+Y(v)).join(" ")}"/>`;
+  pts.forEach((v,i)=>{if(i===0)return;const last=i===pts.length-1;const col=last?(n.o==="ki"?"#F0544F":"#3DD68C"):(v>=0.65?"#3DD68C":"#707070");s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="${last?7:4}" fill="${col}" stroke="#1f1f1f" stroke-width="2"/>`});
+  s+=`<circle cx="${X(0)}" cy="${Y(1)}" r="5" fill="#fff"/>`;
+  s+=`<text x="${X(0)}" y="${H-10}" fill="#707070" font-size="12">Start</text><text x="${X(13)}" y="${H-10}" fill="#707070" font-size="12" text-anchor="middle">6 months</text><text x="${X(26)}" y="${H-10}" fill="#707070" font-size="12" text-anchor="end">1 year</text>`;
+  $("chart").innerHTML=s;
 }
 </script>
 </body>
