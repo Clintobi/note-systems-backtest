@@ -1,8 +1,10 @@
 """Export every backtested note (with its observation path) for the interactive page in docs/."""
 import bisect, datetime as dt, json, statistics as st
 P = json.load(open("prices.json"))
-BAR, N_OBS, GROSS, FEE = 0.65, 26, 0.015, 0.15
-out = {"meta": {"barrier": BAR, "obs": N_OBS, "gross_bps": 150, "fee": FEE}, "stocks": {}}
+# Standing template in the Note Systems docs (Sep 2026): 8 weekly observations, 65% barrier,
+# 100% autocall, reference coupon 50 bps per observation, 25% coupon fee, 0.75% notional fee.
+BAR, N_OBS, STEP, GROSS, FEE, NFEE = 0.65, 8, 7, 0.005, 0.25, 0.0075
+out = {"meta": {"barrier": BAR, "obs": N_OBS, "step_days": STEP, "gross_bps": 50, "fee": FEE, "notional_fee": NFEE}, "stocks": {}}
 for s, rows in P.items():
     days = [dt.date.fromisoformat(d) for d, _ in rows]; px = [p for _, p in rows]
     close = lambda d: px[bisect.bisect_right(days, d) - 1]
@@ -11,7 +13,7 @@ for s, rows in P.items():
         if d0.weekday() != 4 or d0 < dt.date(2015, 1, 1) or d0 > dt.date(2025, 9, 19): continue
         s0 = px[i]; path = []; cp = 0; oc = None
         for k in range(1, N_OBS + 1):
-            r = close(d0 + dt.timedelta(days=14 * k)) / s0; path.append(round(r, 4))
+            r = close(d0 + dt.timedelta(days=STEP * k)) / s0; path.append(round(r, 4))
             if k < N_OBS:
                 if r >= BAR: cp += 1
                 if r >= 1: oc = "ac"; break
@@ -20,7 +22,7 @@ for s, rows in P.items():
                 else: oc = "ki"
         held = len(path); fin = path[-1]
         coupon_ret = cp * GROSS * (1 - FEE) + ((fin - 1) if oc == "ki" else 0)
-        shield = ((1 - fin) if oc == "ki" else 0) - cp * GROSS - 0.0025
+        shield = ((1 - fin) if oc == "ki" else 0) - cp * GROSS - NFEE
         notes.append({"d": d0.isoformat(), "s0": round(s0, 2), "o": oc, "h": held, "c": cp,
                       "p": path, "r": round(coupon_ret, 4), "sh": round(shield, 4)})
     k = len(notes); ki = [n for n in notes if n["o"] == "ki"]
